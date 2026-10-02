@@ -63,5 +63,6 @@ PYTHONPATH=src python scripts/run_fusion.py
 
 - 14 tests passing
 - Baselines complete: bge-m3, e5-small, ruri-v3-30m, modernbert-ja-30m
-- Key finding: modernbert-ja-30m has no retrieval training (EN-JA nDCG=0.037 vs bge-m3's 0.674)
-- Pending: distillation, compression, fusion, release
+- Distillation complete: 50k pairs, 3 epochs, cosine similarity loss
+- **EN-JA: student captures 71% of teacher quality at 1/19th the index size**
+- Pending: compression (Matryoshka, int8/binary, ONNX), fusion, release

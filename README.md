@@ -13,27 +13,25 @@ Tokyo companies with global customers need English queries to find Japanese docu
 3. **Fuse** with MeCab-segmented BM25 via RRF
 4. **Measure** quality kept vs index MB vs CPU ms
 
-## Baselines (500 queries, 5,000 passages)
+## Results
 
-### JA-JA monolingual (JQaRA)
+### Baselines (500 queries, 5,000 passages)
 
-| Model | nDCG@10 | p50 | Index MB |
-|---|---|---|---|
-| cl-nagoya/ruri-v3-30m | 0.9604 | 4.9ms | 4.9 |
-| BAAI/bge-m3 | 0.9421 | 9.7ms | 19.5 |
-| intfloat/multilingual-e5-small | 0.9113 | 6.0ms | 7.3 |
-| sbintuitions/modernbert-ja-30m | 0.3223 | 3.6ms | 4.9 |
+| Model | JA-JA nDCG@10 | EN-JA nDCG@10 | p50 | Index MB |
+|---|---|---|---|---|
+| cl-nagoya/ruri-v3-30m | 0.9604 | 0.5418 | 4.9ms | 4.9 |
+| BAAI/bge-m3 (teacher) | 0.9421 | 0.6742 | 9.7ms | 19.5 |
+| intfloat/multilingual-e5-small | 0.9113 | 0.4795 | 6.0ms | 7.3 |
+| sbintuitions/modernbert-ja-30m | 0.3223 | 0.0373 | 3.6ms | 4.9 |
 
-### EN-JA cross-lingual (opus-100)
+### After distillation (50k pairs, 3 epochs, cosine similarity loss)
 
-| Model | nDCG@10 | p50 | Index MB |
-|---|---|---|---|
-| BAAI/bge-m3 | 0.6742 | 10.1ms | 19.5 |
-| cl-nagoya/ruri-v3-30m | 0.5418 | 5.2ms | 4.9 |
-| intfloat/multilingual-e5-small | 0.4795 | 5.9ms | 7.3 |
-| sbintuitions/modernbert-ja-30m | 0.0373 | 4.1ms | 4.9 |
+| Model | JA-JA nDCG@10 | EN-JA nDCG@10 | vs teacher | Index MB |
+|---|---|---|---|---|
+| BAAI/bge-m3 (teacher) | 0.9421 | 0.6742 | 100% | 19.5 |
+| **student-distilled** | 0.2179 | **0.4809** | **71%** | **4.9** |
 
-**Key finding:** modernbert-ja-30m has no retrieval training — 18× gap to bge-m3 on EN-JA. Distillation should close this.
+**Key finding:** The student captures 71% of the teacher's EN-JA quality at 1/19th the index size. JA-JA is worse than the untrained baseline — expected, since training is on EN-JA pairs only.
 
 ## Usage
 
