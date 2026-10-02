@@ -41,6 +41,15 @@ Tokyo companies with global customers need English queries to find Japanese docu
 
 **Key finding:** The student captures 71% of the teacher's EN-JA quality at 1/19th the index size. Matryoshka truncation lets you choose the quality/size trade-off at serving time — dim=64 retains 87% of quality at 1/4 the index size.
 
+### Hybrid fusion (RRF, k=60)
+
+| eval | Dense | BM25 (MeCab) | RRF fusion |
+|---|---|---|---|
+| JA-JA | 0.1545 | **0.8123** | 0.4334 |
+| EN-JA | **0.4158** | 0.0166 | 0.2049 |
+
+**Fusion finding:** RRF hurts when one method dominates. The student is strong at EN-JA but weak at JA-JA; BM25 is the reverse. Fusing a strong method with a weak one drags the strong method down. Hybrid only helps when both methods are reasonably good on the same query type.
+
 ## Usage
 
 ```bash

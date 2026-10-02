@@ -64,5 +64,7 @@ PYTHONPATH=src python scripts/run_fusion.py
 - 14 tests passing
 - Baselines complete: bge-m3, e5-small, ruri-v3-30m, modernbert-ja-30m
 - Distillation complete: 50k pairs, 3 epochs, cosine similarity loss
+- Compression complete: Matryoshka fine-tune, graceful quality/size trade-off
+- Fusion complete: RRF hurts when one method dominates
 - **EN-JA: student captures 71% of teacher quality at 1/19th the index size**
-- Pending: compression (Matryoshka, int8/binary, ONNX), fusion, release
+- Pending: release (HF model, write-up)
