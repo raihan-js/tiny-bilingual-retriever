@@ -110,13 +110,14 @@ def export_onnx(student, out_path: Path, dim: int = 256) -> None:
         (dummy["input_ids"], dummy["attention_mask"]),
         str(out_path),
         input_names=["input_ids", "attention_mask"],
-        output_names=["embedding"],
+        output_names=["sentence_embedding"],
         dynamic_axes={
             "input_ids": {0: "batch", 1: "seq"},
             "attention_mask": {0: "batch", 1: "seq"},
-            "embedding": {0: "batch"},
+            "sentence_embedding": {0: "batch"},
         },
         opset_version=17,
+        dynamo=False,
     )
     print(f"  Exported ONNX to {out_path}", flush=True)
 
