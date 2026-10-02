@@ -6,6 +6,8 @@
 
 > Scope note: English-to-Japanese retrieval only. EN-JA eval is synthetic (opus-100 pairs), not a standard benchmark. All models compared on the same fixed subsample.
 
+![tiny-bilingual-retriever results](https://raw.githubusercontent.com/raihan-js/tiny-bilingual-retriever/main/images/tiny-bilingual.png)
+
 ## The problem
 
 Tokyo companies with global customers need English queries to find Japanese documents. A 568M model (bge-m3) is too big for CPU serving. Can a 30M student match the teacher's cross-lingual quality?
