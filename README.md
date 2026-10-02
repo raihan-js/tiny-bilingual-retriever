@@ -31,7 +31,15 @@ Tokyo companies with global customers need English queries to find Japanese docu
 | BAAI/bge-m3 (teacher) | 0.9421 | 0.6742 | 100% | 19.5 |
 | **student-distilled** | 0.2179 | **0.4809** | **71%** | **4.9** |
 
-**Key finding:** The student captures 71% of the teacher's EN-JA quality at 1/19th the index size. JA-JA is worse than the untrained baseline — expected, since training is on EN-JA pairs only.
+### After Matryoshka fine-tune (2 epochs)
+
+| dim | EN-JA nDCG@10 | vs dim=256 | Index MB | p50 |
+|---|---|---|---|---|
+| 256 | 0.4158 | 100% | 4.9 | 4.5ms |
+| 128 | 0.3989 | 96% | 2.4 | 4.7ms |
+| 64 | 0.3613 | 87% | 1.2 | 0.5ms |
+
+**Key finding:** The student captures 71% of the teacher's EN-JA quality at 1/19th the index size. Matryoshka truncation lets you choose the quality/size trade-off at serving time — dim=64 retains 87% of quality at 1/4 the index size.
 
 ## Usage
 
