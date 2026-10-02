@@ -25,6 +25,23 @@ MODELS = [
 RESULTS = Path("data/results")
 
 
+def run_eval(encoder: Encoder, queries: list, passages: list,
+             qid_to_rel: dict, eval_set: str) -> RetrievalResult:
+    """Run retrieval eval for one encoder."""
+    print(f"  encoding {len(queries)} queries...", flush=True)
+    q_emb = encoder.encode_queries([q["text"] for q in queries])
+    print(f"  encoding {len(passages)} passages...", flush=True)
+    p_emb = encoder.encode_passages([p["text"] for p in passages])
+    print(f"  searching...", flush=True)
+    indices, scores, latencies = timed_search(q_emb, p_emb, k=100)
+    p_ids = [p["id"] for p in passages]
+    judgments = build_relevance_judgments(
+        [q["id"] for q in queries], indices, p_ids, qid_to_rel)
+    metrics = compute_metrics(judgments, latencies)
+    return RetrievalResult(
+        model=encoder.name,
+        eval_set=eval_set,
+        n_queries=len(queries),
         n_passages=len(passages),
         ndcg_at_10=metrics["ndcg_at_10"],
         recall_at_100=metrics["recall_at_100"],

@@ -50,6 +50,15 @@ Tokyo companies with global customers need English queries to find Japanese docu
 
 **Fusion finding:** RRF hurts when one method dominates. The student is strong at EN-JA but weak at JA-JA; BM25 is the reverse. Fusing a strong method with a weak one drags the strong method down. Hybrid only helps when both methods are reasonably good on the same query type.
 
+### After JA-JA training (JQaRA, 3 epochs)
+
+| Model | JA-JA nDCG@10 | EN-JA nDCG@10 |
+|---|---|---|
+| student-matryoshka | 0.1545 | **0.4158** |
+| student-ja-en | **0.4348** | 0.2632 |
+
+**Trade-off:** JA-JA training improves monolingual retrieval (0.15→0.43) but degrades cross-lingual (0.42→0.26). The student becomes more balanced but loses its EN-JA specialty.
+
 ## Usage
 
 ```bash
