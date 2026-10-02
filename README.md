@@ -59,6 +59,16 @@ Tokyo companies with global customers need English queries to find Japanese docu
 
 **Trade-off:** JA-JA training improves monolingual retrieval (0.15→0.43) but degrades cross-lingual (0.42→0.26). The student becomes more balanced but loses its EN-JA specialty.
 
+### Quantisation (int8 and binary)
+
+| Method | EN-JA nDCG@10 | vs float32 | Index MB |
+|---|---|---|---|
+| float32 | 0.4158 | 100% | 4.9 |
+| int8 | 0.4143 | 99.6% | 1.2 |
+| binary | 0.0322 | 7.7% | 0.2 |
+
+**int8 is nearly free** — 99.6% quality at 1/4 the index size. Binary is catastrophic — the sign of each element loses too much information.
+
 ## Usage
 
 ```bash
