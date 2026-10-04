@@ -26,7 +26,7 @@ Tokyo companies with global customers need English queries to find Japanese docu
 | intfloat/multilingual-e5-small | 0.9113 | 0.4795 | 1.9ms | 7.3 |
 | sbintuitions/modernbert-ja-30m | 0.3223 | 0.0373 | 1.1ms | 4.9 |
 
-All values are in `data/results/baselines.json` (re-run 2026-10-05; the nDCG values reproduced the numbers first reported here exactly). **Search p50** is the brute-force cosine search over the 5,000 pre-encoded passages for one query (JA-JA run, CPU, single run), not query-encoding time, so it mostly tracks embedding size (1,024-d bge-m3 vs 256-d for the 30M models). The latency column of the first run (3.6 to 9.7 ms) differed by up to ~5x from the re-run on the same machine, so read these as order-of-magnitude.
+All values are in `results/baselines.json` (a tracked copy of `data/results/baselines.json`, which is git-ignored; re-run 2026-10-05; the nDCG values reproduced the numbers first reported here exactly). **Search p50** is the brute-force cosine search over the 5,000 pre-encoded passages for one query (JA-JA run, CPU, single run), not query-encoding time, so it mostly tracks embedding size (1,024-d bge-m3 vs 256-d for the 30M models). The latency column of the first run (3.6 to 9.7 ms) differed by up to ~5x from the re-run on the same machine, so read these as order-of-magnitude.
 
 ### After distillation (50k pairs, 3 epochs, cosine similarity loss)
 
