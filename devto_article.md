@@ -1,4 +1,4 @@
-# I Distilled a 568M Multilingual Model Into a 30M Japanese-English Encoder — Here's What Survived
+# I Distilled a 568M Multilingual Model Into a 37M Japanese-English Encoder — Here's What Survived
 
 *Cross-lingual retrieval distillation, compression, and the honest cost table.*
 
@@ -10,7 +10,7 @@
 
 ## The problem
 
-Tokyo companies with global customers need English queries to find Japanese documents. A 568M model (bge-m3) is too big for CPU serving. Can a 30M student match the teacher's cross-lingual quality?
+Tokyo companies with global customers need English queries to find Japanese documents. A 568M model (bge-m3) is too big for CPU serving. Can a ~37M student match the teacher's cross-lingual quality?
 
 ## The approach
 
@@ -26,12 +26,12 @@ Tokyo companies with global customers need English queries to find Japanese docu
 | Model | EN-JA nDCG@10 | vs teacher | Index MB |
 |---|---|---|---|
 | BAAI/bge-m3 (teacher, 568M) | 0.6742 | 100% | 19.5 |
-| **student-distilled (30M)** | **0.4809** | **71%** | **4.9** |
+| **student-distilled (36.7M)** | **0.4809** | **71%** | **4.9** |
 | intfloat/multilingual-e5-small | 0.4795 | 71% | 7.3 |
 | cl-nagoya/ruri-v3-30m | 0.5418 | 80% | 4.9 |
 | modernbert-ja-30m (untrained) | 0.0373 | 6% | 4.9 |
 
-**The student captures 71% of the teacher's EN-JA quality with 1/19th the parameters (30M vs 568M) and a 4× smaller index (4.9 vs 19.5 MB).** It matches e5-small (a 118M model) despite being 4× smaller.
+**The student captures 71% of the teacher's EN-JA quality with 15× fewer parameters (36.7M vs 568M) and a 4× smaller index (4.9 vs 19.5 MB).** It matches e5-small (a 118M model) despite being 4× smaller.
 
 ### Compression (Matryoshka fine-tune)
 
@@ -77,7 +77,7 @@ int8 is nearly free: 99.6% of the quality at 1/4 the index. Binary is catastroph
 2. **Matryoshka truncation is a free lunch.** 87% quality at 1/4 the index size.
 3. **RRF fusion is not a free lunch.** It hurts when one method dominates.
 4. **The student is a specialist, not a generalist.** Good at EN-JA, poor at JA-JA (0.22 vs the teacher's 0.94); fixing JA-JA costs EN-JA.
-5. **A public 30M model beats it.** cl-nagoya/ruri-v3-30m scores higher on both (EN-JA 0.54 vs 0.48). The contribution here is the measured recipe and cost table, not a new best model.
+5. **A public model of the same size beats it.** cl-nagoya/ruri-v3-30m scores higher on both (EN-JA 0.54 vs 0.48). The contribution here is the measured recipe and cost table, not a new best model.
 
 ## Limitations
 

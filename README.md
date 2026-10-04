@@ -2,11 +2,11 @@
 
 ![tiny-bilingual-retriever results](images/tiny-bilingual.png)
 
-Distill BAAI/bge-m3 (568M) into sbintuitions/modernbert-ja-30m (30M) for English-Japanese cross-lingual retrieval on CPU.
+Distill BAAI/bge-m3 (568M) into sbintuitions/modernbert-ja-30m (the "30M" model; 36.7M parameters including embeddings) for English-Japanese cross-lingual retrieval on CPU.
 
 ## The problem
 
-Tokyo companies with global customers need English queries to find Japanese documents. A 568M model is too big for CPU serving. Can a 30M student match the teacher's cross-lingual quality?
+Tokyo companies with global customers need English queries to find Japanese documents. A 568M model is too big for CPU serving. Can a ~37M student match the teacher's cross-lingual quality?
 
 ## The approach
 
@@ -41,7 +41,7 @@ Tokyo companies with global customers need English queries to find Japanese docu
 | 128 | 0.3989 | 96% | 2.4 | 4.7ms |
 | 64 | 0.3613 | 87% | 1.2 | 0.5ms |
 
-**Key finding:** The student captures 71% of the teacher's EN-JA quality with 1/19th the parameters (30M vs 568M) and a 4× smaller index (4.9 vs 19.5 MB). Matryoshka truncation lets you choose the quality/size trade-off at serving time: dim=64 keeps 87% of the dim-256 Matryoshka model's score at 1/4 its index. Two caveats on that number: the Matryoshka fine-tune itself cost quality at full width (EN-JA nDCG 0.4809 distilled → 0.4158 at dim 256), and measured against the teacher, dim 64 is 54% (0.3613 vs 0.6742).
+**Key finding:** The student captures 71% of the teacher's EN-JA quality with 15× fewer parameters (36.7M vs 568M) and a 4× smaller index (4.9 vs 19.5 MB). Matryoshka truncation lets you choose the quality/size trade-off at serving time: dim=64 keeps 87% of the dim-256 Matryoshka model's score at 1/4 its index. Two caveats on that number: the Matryoshka fine-tune itself cost quality at full width (EN-JA nDCG 0.4809 distilled → 0.4158 at dim 256), and measured against the teacher, dim 64 is 54% (0.3613 vs 0.6742).
 
 ### Hybrid fusion (RRF, k=60)
 
