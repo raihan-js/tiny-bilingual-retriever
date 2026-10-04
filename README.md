@@ -1,5 +1,7 @@
 # Tiny Bilingual Retriever
 
+![tiny-bilingual-retriever results](images/tiny-bilingual.png)
+
 Distill BAAI/bge-m3 (568M) into sbintuitions/modernbert-ja-30m (30M) for English-Japanese cross-lingual retrieval on CPU.
 
 ## The problem
@@ -39,7 +41,7 @@ Tokyo companies with global customers need English queries to find Japanese docu
 | 128 | 0.3989 | 96% | 2.4 | 4.7ms |
 | 64 | 0.3613 | 87% | 1.2 | 0.5ms |
 
-**Key finding:** The student captures 71% of the teacher's EN-JA quality at 1/19th the index size. Matryoshka truncation lets you choose the quality/size trade-off at serving time — dim=64 retains 87% of quality at 1/4 the index size.
+**Key finding:** The student captures 71% of the teacher's EN-JA quality with 1/19th the parameters (30M vs 568M) and a 4× smaller index (4.9 vs 19.5 MB). Matryoshka truncation lets you choose the quality/size trade-off at serving time: dim=64 keeps 87% of the dim-256 Matryoshka model's score at 1/4 its index. Two caveats on that number: the Matryoshka fine-tune itself cost quality at full width (EN-JA nDCG 0.4809 distilled → 0.4158 at dim 256), and measured against the teacher, dim 64 is 54% (0.3613 vs 0.6742).
 
 ### Hybrid fusion (RRF, k=60)
 
@@ -90,6 +92,8 @@ PYTHONPATH=src python scripts/run_fusion.py
 - EN-JA eval is synthetic (opus-100 pairs), not a standard benchmark
 - Absolute nDCG inflated by subsampling; only relative comparisons meaningful
 - Student starts with no retrieval training; distillation quality depends on teacher
+- The public cl-nagoya/ruri-v3-30m (same size) scores higher on both JA-JA (0.96 vs 0.22) and EN-JA (0.54 vs 0.48): this is a measured recipe and cost table, not a state-of-the-art model
+- Latency is PyTorch on CPU, single measurement; the p50 drop from 4.7 ms (dim 128) to 0.5 ms (dim 64) looks like measurement noise, not a 10× speed-up. `scripts/compress.py` contains an ONNX export path; no ONNX numbers are reported here
 
 ## License
 

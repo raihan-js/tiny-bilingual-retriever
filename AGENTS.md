@@ -66,5 +66,5 @@ PYTHONPATH=src python scripts/run_fusion.py
 - Distillation complete: 50k pairs, 3 epochs, cosine similarity loss
 - Compression complete: Matryoshka fine-tune, graceful quality/size trade-off
 - Fusion complete: RRF hurts when one method dominates
-- **EN-JA: student captures 71% of teacher quality at 1/19th the index size**
+- **EN-JA: student captures 71% of teacher quality with 1/19th the parameters and a 4x smaller index**
 - Pending: release (HF model, write-up)

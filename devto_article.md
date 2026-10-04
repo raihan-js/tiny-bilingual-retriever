@@ -6,7 +6,7 @@
 
 > Scope note: English-to-Japanese retrieval only. EN-JA eval is synthetic (opus-100 pairs), not a standard benchmark. All models compared on the same fixed subsample.
 
-![tiny-bilingual-retriever results](https://raw.githubusercontent.com/raihan-js/tiny-bilingual-retriever/main/images/tiny-bilingual.png)
+![tiny-bilingual-retriever results](https://raw.githubusercontent.com/raihan-js/tiny-bilingual-retriever/HEAD/images/tiny-bilingual.png)
 
 ## The problem
 
@@ -31,7 +31,7 @@ Tokyo companies with global customers need English queries to find Japanese docu
 | cl-nagoya/ruri-v3-30m | 0.5418 | 80% | 4.9 |
 | modernbert-ja-30m (untrained) | 0.0373 | 6% | 4.9 |
 
-**The student captures 71% of the teacher's EN-JA quality at 1/19th the index size.** It matches e5-small (a 118M model) despite being 4× smaller.
+**The student captures 71% of the teacher's EN-JA quality with 1/19th the parameters (30M vs 568M) and a 4× smaller index (4.9 vs 19.5 MB).** It matches e5-small (a 118M model) despite being 4× smaller.
 
 ### Compression (Matryoshka fine-tune)
 
@@ -41,7 +41,7 @@ Tokyo companies with global customers need English queries to find Japanese docu
 | 128 | 0.3989 | 96% | 2.4 | 4.7ms |
 | 64 | 0.3613 | 87% | 1.2 | 0.5ms |
 
-**Matryoshka truncation lets you choose the quality/size trade-off at serving time.** At dim=64, you get 87% of the quality at 1/4 the index size and 10× faster search.
+**Matryoshka truncation lets you choose the quality/size trade-off at serving time.** At dim=64 you keep 87% of the dim-256 model's score at 1/4 the index. Two caveats: the Matryoshka fine-tune itself cost quality at full width (0.4809 distilled → 0.4158 at dim 256), and against the teacher dim 64 is 54% (0.3613 vs 0.6742). The latency column is a single PyTorch/CPU measurement; the drop from 4.7 ms to 0.5 ms between dim 128 and 64 looks like noise, not a 10× speed-up.
 
 ### Hybrid fusion (RRF, k=60)
 
@@ -52,25 +52,45 @@ Tokyo companies with global customers need English queries to find Japanese docu
 
 **RRF hurts when one method dominates.** The student is strong at EN-JA but weak at JA-JA; BM25 is the reverse. Fusing a strong method with a weak one drags the strong method down. Hybrid only helps when both methods are reasonably good on the same query type.
 
+### After JA-JA training (JQaRA, 3 epochs)
+
+| Model | JA-JA nDCG@10 | EN-JA nDCG@10 |
+|---|---|---|
+| student-matryoshka | 0.1545 | **0.4158** |
+| student-ja-en | **0.4348** | 0.2632 |
+
+Training on Japanese pairs lifts monolingual retrieval (0.15 → 0.43) and costs cross-lingual quality (0.42 → 0.26). The student becomes more balanced and loses its EN-JA specialty: a real trade-off, not a free improvement.
+
+### Quantisation (int8 and binary)
+
+| Method | EN-JA nDCG@10 | vs float32 | Index MB |
+|---|---|---|---|
+| float32 | 0.4158 | 100% | 4.9 |
+| int8 | 0.4143 | 99.6% | 1.2 |
+| binary | 0.0322 | 7.7% | 0.2 |
+
+int8 is nearly free: 99.6% of the quality at 1/4 the index. Binary is catastrophic here, because the sign of each element loses too much information at this embedding width.
+
 ## Key findings
 
 1. **Cosine similarity loss >> MSE loss for retrieval distillation.** MSE gave 0.03 EN-JA nDCG; cosine gave 0.48.
 2. **Matryoshka truncation is a free lunch.** 87% quality at 1/4 the index size.
 3. **RRF fusion is not a free lunch.** It hurts when one method dominates.
-4. **The student is a specialist, not a generalist.** Great at EN-JA, poor at JA-JA.
+4. **The student is a specialist, not a generalist.** Good at EN-JA, poor at JA-JA (0.22 vs the teacher's 0.94); fixing JA-JA costs EN-JA.
+5. **A public 30M model beats it.** cl-nagoya/ruri-v3-30m scores higher on both (EN-JA 0.54 vs 0.48). The contribution here is the measured recipe and cost table, not a new best model.
 
 ## Limitations
 
 - EN-JA eval is synthetic (opus-100 pairs), not a standard benchmark.
 - Absolute nDCG inflated by subsampling; only relative comparisons meaningful.
 - Student trained on EN-JA pairs only; JA-JA quality is poor.
-- ONNX export attempted but has load issues; CPU latency measured with PyTorch.
+- Latency is PyTorch on CPU, single measurement. `scripts/compress.py` has an ONNX export path, but no ONNX numbers are reported here.
 
 ## What's next
 
-- Train on JA-JA pairs to improve monolingual quality
-- Add int8/binary quantisation for further compression
-- Evaluate on human-written Japanese eval sets (JQaRA, JaCWIR)
+- Evaluate on human-written Japanese sets (JQaRA, JaCWIR) instead of synthetic opus-100 pairs
+- Start from ruri-v3-30m or distil with a mixed EN-JA / JA-JA objective to avoid the specialist trade-off
+- Report ONNX Runtime latency and a verified export
 
 ---
 
