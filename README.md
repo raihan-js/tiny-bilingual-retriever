@@ -19,12 +19,14 @@ Tokyo companies with global customers need English queries to find Japanese docu
 
 ### Baselines (500 queries, 5,000 passages)
 
-| Model | JA-JA nDCG@10 | EN-JA nDCG@10 | p50 | Index MB |
+| Model | JA-JA nDCG@10 | EN-JA nDCG@10 | Search p50 | Index MB |
 |---|---|---|---|---|
-| cl-nagoya/ruri-v3-30m | 0.9604 | 0.5418 | 4.9ms | 4.9 |
-| BAAI/bge-m3 (teacher) | 0.9421 | 0.6742 | 9.7ms | 19.5 |
-| intfloat/multilingual-e5-small | 0.9113 | 0.4795 | 6.0ms | 7.3 |
-| sbintuitions/modernbert-ja-30m | 0.3223 | 0.0373 | 3.6ms | 4.9 |
+| cl-nagoya/ruri-v3-30m | 0.9604 | 0.5418 | 1.0ms | 4.9 |
+| BAAI/bge-m3 (teacher) | 0.9421 | 0.6742 | 6.1ms | 19.5 |
+| intfloat/multilingual-e5-small | 0.9113 | 0.4795 | 1.9ms | 7.3 |
+| sbintuitions/modernbert-ja-30m | 0.3223 | 0.0373 | 1.1ms | 4.9 |
+
+All values are in `data/results/baselines.json` (re-run 2026-10-05; the nDCG values reproduced the numbers first reported here exactly). **Search p50** is the brute-force cosine search over the 5,000 pre-encoded passages for one query (JA-JA run, CPU, single run), not query-encoding time, so it mostly tracks embedding size (1,024-d bge-m3 vs 256-d for the 30M models). The latency column of the first run (3.6 to 9.7 ms) differed by up to ~5x from the re-run on the same machine, so read these as order-of-magnitude.
 
 ### After distillation (50k pairs, 3 epochs, cosine similarity loss)
 
@@ -35,7 +37,7 @@ Tokyo companies with global customers need English queries to find Japanese docu
 
 ### After Matryoshka fine-tune (2 epochs)
 
-| dim | EN-JA nDCG@10 | vs dim=256 | Index MB | p50 |
+| dim | EN-JA nDCG@10 | vs dim=256 | Index MB | Search p50 (single run, noisy) |
 |---|---|---|---|---|
 | 256 | 0.4158 | 100% | 4.9 | 4.5ms |
 | 128 | 0.3989 | 96% | 2.4 | 4.7ms |

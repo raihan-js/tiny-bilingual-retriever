@@ -84,7 +84,7 @@ int8 is nearly free: 99.6% of the quality at 1/4 the index. Binary is catastroph
 - EN-JA eval is synthetic (opus-100 pairs), not a standard benchmark.
 - Absolute nDCG inflated by subsampling; only relative comparisons meaningful.
 - Student trained on EN-JA pairs only; JA-JA quality is poor.
-- Latency is PyTorch on CPU, single measurement. `scripts/compress.py` has an ONNX export path, but no ONNX numbers are reported here.
+- Latency is the brute-force search time over 5,000 pre-encoded passages (not query-encoding time), PyTorch on CPU, single measurement; a re-run of the baselines differed by up to ~5x, so treat it as order-of-magnitude. `scripts/compress.py` has an ONNX export path, but no ONNX numbers are reported here.
 
 ## What's next
 
