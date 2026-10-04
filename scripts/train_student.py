@@ -2,8 +2,8 @@
 """Distill bge-m3 into modernbert-ja-30m using EN-JA sentence pairs.
 
 The student learns to map both English and Japanese sentences to the same
-embedding space as the teacher. Loss is MSE between student and teacher
-embeddings.
+embedding space as the teacher. Loss is cosine distance between the projected
+student embedding and the teacher embedding (--loss mse switches to MSE for the ablation).
 
 Teacher embeddings are computed once on GPU and cached to disk.
 
@@ -38,8 +38,9 @@ def compute_teacher_embeddings(teacher, pairs: list[dict], batch_size: int = 256
 def train_student(student, pairs: list[dict], teacher_en_emb: np.ndarray,
                   teacher_ja_emb: np.ndarray, epochs: int = 3,
                   batch_size: int = 64, lr: float = 2e-5,
-                  device: str = "cuda") -> None:
-    """Train student with MSE loss on both EN and JA sentences.
+                  device: str = "cuda", loss_name: str = "cosine",
+                  out_dir: Path = DATA_DIR / "models" / "student-distilled") -> None:
+    """Train student on both EN and JA sentences (cosine or MSE loss against the teacher).
 
     A projection layer bridges the dimension gap (student 256 → teacher 1024).
     """
@@ -47,7 +48,7 @@ def train_student(student, pairs: list[dict], teacher_en_emb: np.ndarray,
     from torch import nn
 
     # Ensure output directory exists
-    (DATA_DIR / "models" / "student-distilled").mkdir(parents=True, exist_ok=True)
+    out_dir.mkdir(parents=True, exist_ok=True)
 
     student.to(device)
     student.train()
@@ -82,10 +83,12 @@ def train_student(student, pairs: list[dict], teacher_en_emb: np.ndarray,
             output = student(features)
             student_emb = projector(output["sentence_embedding"])
 
-            # Cosine similarity loss (more appropriate for retrieval than MSE)
-            student_emb = torch.nn.functional.normalize(student_emb, dim=-1)
-            target = torch.nn.functional.normalize(target, dim=-1)
-            loss = 1.0 - torch.nn.functional.cosine_similarity(student_emb, target, dim=-1).mean()
+            if loss_name == "cosine":
+                student_emb = torch.nn.functional.normalize(student_emb, dim=-1)
+                target = torch.nn.functional.normalize(target, dim=-1)
+                loss = 1.0 - torch.nn.functional.cosine_similarity(student_emb, target, dim=-1).mean()
+            else:  # plain MSE on the raw (unnormalised) projected embedding
+                loss = torch.nn.functional.mse_loss(student_emb, target)
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
@@ -98,7 +101,7 @@ def train_student(student, pairs: list[dict], teacher_en_emb: np.ndarray,
 
     # Save the projector for inference
     import torch
-    torch.save(projector.state_dict(), DATA_DIR / "models" / "student-distilled" / "projector.pt")
+    torch.save(projector.state_dict(), out_dir / "projector.pt")
 
 
 def main() -> None:
@@ -106,7 +109,7 @@ def main() -> None:
     ap.add_argument("--epochs", type=int, default=3)
     ap.add_argument("--batch-size", type=int, default=64)
     ap.add_argument("--lr", type=float, default=2e-5)
-    ap.add_argument("--n-pairs", type=int, default=100000)
+    ap.add_argument("--n-pairs", type=int, default=50000)
     ap.add_argument("--device", default="cuda")
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--step", choices=["embed", "train", "all"], default="all")
@@ -155,17 +158,17 @@ def main() -> None:
         print("Training student...", flush=True)
         train_student(student, pairs, teacher_en_emb, teacher_ja_emb,
                       epochs=args.epochs, batch_size=args.batch_size,
-                      lr=args.lr, device=args.device)
+                      lr=args.lr, device=args.device, loss_name=args.loss, out_dir=Path(args.out_dir))
 
         # Save
-        out_dir = DATA_DIR / "models" / "student-distilled"
+        out_dir = Path(args.out_dir)
         out_dir.mkdir(parents=True, exist_ok=True)
         student.save(str(out_dir))
         print(f"Saved student to {out_dir}", flush=True)
 
         meta = {"teacher": TEACHER, "student": STUDENT, "n_pairs": len(pairs),
                 "epochs": args.epochs, "batch_size": args.batch_size, "lr": args.lr,
-                "seed": args.seed}
+                "seed": args.seed, "loss": args.loss}
         (out_dir / "meta.json").write_text(json.dumps(meta, indent=2))
         print(json.dumps(meta, indent=2), flush=True)
 

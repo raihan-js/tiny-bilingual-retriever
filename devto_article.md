@@ -73,7 +73,7 @@ int8 is nearly free: 99.6% of the quality at 1/4 the index. Binary is catastroph
 
 ## Key findings
 
-1. **Cosine similarity loss >> MSE loss for retrieval distillation.** MSE gave 0.03 EN-JA nDCG; cosine gave 0.48.
+1. **Cosine similarity loss worked; an earlier MSE attempt did not.** The first MSE-trained student scored about 0.03 EN-JA nDCG (no better than the untrained base), against 0.48 with cosine. That MSE run's outputs were not kept, so treat it as an observation, not a controlled ablation: `scripts/train_student.py --loss mse --out-dir ...` re-runs it, and a clean comparison is queued.
 2. **Matryoshka truncation is a free lunch.** 87% quality at 1/4 the index size.
 3. **RRF fusion is not a free lunch.** It hurts when one method dominates.
 4. **The student is a specialist, not a generalist.** Good at EN-JA, poor at JA-JA (0.22 vs the teacher's 0.94); fixing JA-JA costs EN-JA.
@@ -84,6 +84,8 @@ int8 is nearly free: 99.6% of the quality at 1/4 the index. Binary is catastroph
 - EN-JA eval is synthetic (opus-100 pairs), not a standard benchmark.
 - Absolute nDCG inflated by subsampling; only relative comparisons meaningful.
 - Student trained on EN-JA pairs only; JA-JA quality is poor.
+- About 5% of the eval queries (27 of 500) were also in the 50k training pairs (both are seed-0 samples of the same OPUS-100 split). Scoring only the 473 unseen queries gives 0.484 vs 0.481 overall, so it does not drive the result.
+- Checkpoints: the 71% number is the plain distilled student, published as `raihan-js/tiny-rerank-ja-en-30m-distilled`. The older `raihan-js/tiny-rerank-ja-en-30m` is the Matryoshka fine-tune of it (EN-JA 0.416, 62% of the teacher at 256 dims) with ONNX exports.
 - Latency is the brute-force search time over 5,000 pre-encoded passages (not query-encoding time), PyTorch on CPU, single measurement; a re-run of the baselines differed by up to ~5x, so treat it as order-of-magnitude. `scripts/compress.py` has an ONNX export path, but no ONNX numbers are reported here.
 
 ## What's next

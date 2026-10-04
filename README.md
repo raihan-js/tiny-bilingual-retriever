@@ -28,6 +28,17 @@ Tokyo companies with global customers need English queries to find Japanese docu
 
 All values are in `results/baselines.json` (a tracked copy of `data/results/baselines.json`, which is git-ignored; re-run 2026-10-05; the nDCG values reproduced the numbers first reported here exactly). **Search p50** is the brute-force cosine search over the 5,000 pre-encoded passages for one query (JA-JA run, CPU, single run), not query-encoding time, so it mostly tracks embedding size (1,024-d bge-m3 vs 256-d for the 30M models). The latency column of the first run (3.6 to 9.7 ms) differed by up to ~5x from the re-run on the same machine, so read these as order-of-magnitude.
 
+### Which checkpoint is on Hugging Face
+
+| HF repo | What it is | EN-JA nDCG@10 | vs teacher |
+|---|---|---|---|
+| [`tiny-rerank-ja-en-30m-distilled`](https://huggingface.co/raihan-js/tiny-rerank-ja-en-30m-distilled) | the distilled student (`data/models/student-distilled`) | 0.4809 | 71% |
+| [`tiny-rerank-ja-en-30m`](https://huggingface.co/raihan-js/tiny-rerank-ja-en-30m) | that student after the Matryoshka fine-tune, plus ONNX for dims 256/128/64 (`student-matryoshka`, verified by SHA-256 of the weights) | 0.4158 | 62% |
+
+The 71% headline is the first row. Until 2026-10-05 only the second row was on the Hub, so its card now says so.
+
+**Train/eval overlap check.** The 50k distillation pairs and the EN-JA eval are both seed-0 samples of the OPUS-100 en-ja train split; 27 of the 500 eval queries (5.4%, chance level) were also training pairs. Scoring only the 473 unseen queries (`scripts/leakage_check.py`, `results/leakage_check.json`): distilled 0.4838 (vs 0.4809 overall), Matryoshka 0.4139 (vs 0.4158), untrained base 0.0371 (vs 0.0373). The overlap does not drive the result.
+
 ### After distillation (50k pairs, 3 epochs, cosine similarity loss)
 
 | Model | JA-JA nDCG@10 | EN-JA nDCG@10 | vs teacher | Index MB |
@@ -43,7 +54,7 @@ All values are in `results/baselines.json` (a tracked copy of `data/results/base
 | 128 | 0.3989 | 96% | 2.4 | 4.7ms |
 | 64 | 0.3613 | 87% | 1.2 | 0.5ms |
 
-**Key finding:** The student captures 71% of the teacher's EN-JA quality with 15× fewer parameters (36.7M vs 568M) and a 4× smaller index (4.9 vs 19.5 MB). Matryoshka truncation lets you choose the quality/size trade-off at serving time: dim=64 keeps 87% of the dim-256 Matryoshka model's score at 1/4 its index. Two caveats on that number: the Matryoshka fine-tune itself cost quality at full width (EN-JA nDCG 0.4809 distilled → 0.4158 at dim 256), and measured against the teacher, dim 64 is 54% (0.3613 vs 0.6742).
+**Key finding:** The distilled student captures 71% of the teacher's EN-JA quality with 15× fewer parameters (36.7M vs 568M) and a 4× smaller index (4.9 vs 19.5 MB). Matryoshka truncation lets you choose the quality/size trade-off at serving time: dim=64 keeps 87% of the dim-256 Matryoshka model's score at 1/4 its index. Two caveats on that number: the Matryoshka fine-tune itself cost quality at full width (EN-JA nDCG 0.4809 distilled → 0.4158 at dim 256), and measured against the teacher, dim 64 is 54% (0.3613 vs 0.6742).
 
 ### Hybrid fusion (RRF, k=60)
 

@@ -1,0 +1,26 @@
+[
+  {
+    "model": "data/models/student-distilled",
+    "n_queries": 500,
+    "n_seen_in_training": 27,
+    "all": 0.48088429048671,
+    "unseen_only": 0.48381583068574324,
+    "seen_only": 0.429528049222165
+  },
+  {
+    "model": "data/models/student-matryoshka",
+    "n_queries": 500,
+    "n_seen_in_training": 27,
+    "all": 0.4158435093531041,
+    "unseen_only": 0.4139236901088691,
+    "seen_only": 0.44947589833544205
+  },
+  {
+    "model": "sbintuitions/modernbert-ja-30m",
+    "n_queries": 500,
+    "n_seen_in_training": 27,
+    "all": 0.03733050516986499,
+    "unseen_only": 0.03707044996059416,
+    "seen_only": 0.041886287169313245
+  }
+]
