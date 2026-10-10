@@ -2,6 +2,8 @@
 
 ![tiny-bilingual-retriever results](images/tiny-bilingual.png)
 
+Write-up: [I Distilled a 568M Multilingual Model Into a 37M Japanese-English Encoder — Here's What Survived](https://dev.to/raihan-js/i-distilled-a-568m-multilingual-model-into-a-37m-japanese-english-encoder-heres-what-survived-27c4)
+
 Distill BAAI/bge-m3 (568M) into sbintuitions/modernbert-ja-30m (the "30M" model; 36.7M parameters including embeddings) for English-Japanese cross-lingual retrieval on CPU.
 
 ## The problem
